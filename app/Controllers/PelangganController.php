@@ -104,6 +104,31 @@ class PelangganController extends ResourceController
     public function update($id = null)
     {
         //
+        $rules = $this->validate([
+            'nama_pelanggan' => 'required',
+            'alamat' => 'required',
+            'telepon' => 'required'
+        ]);
+
+        if(!$rules) {
+            $response = [
+                'message' => $this->validator->getErrors()
+            ];
+
+            return $this->failValidationErrors($response);
+        }
+
+        $this->model->update($id, [
+            'nama_pelanggan' => esc($this->request->getVar('nama_pelanggan')),
+            'alamat' => esc($this->request->getVar('alamat')),
+            'telepon' => esc($this->request->getVar('telepon')),
+        ]);
+
+        $response = [
+            'message' => 'Data berhasil diupdate!'
+        ];
+
+        return $this->respondUpdated($response);
     }
 
     /**
@@ -116,5 +141,12 @@ class PelangganController extends ResourceController
     public function delete($id = null)
     {
         //
+        $this->model->delete($id);
+
+        $response = [
+            'message' => 'Data berhasil dihapus!'
+        ];
+
+        return $this->respondDeleted($response);
     }
 }
