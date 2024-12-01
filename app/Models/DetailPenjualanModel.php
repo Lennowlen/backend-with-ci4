@@ -6,10 +6,8 @@ use CodeIgniter\Model;
 
 class DetailPenjualanModel extends Model
 {
-    protected $table            = 'detailpenjualans';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $allowedFields    = ['id_penjualan', 'id_produk', 'quantity', 'subtotal'];
+    protected $table            = 'detailpenjualan';
+    protected $allowedFields    = ['quantity', 'subtotal'];
 
     // Dates
     protected $useTimestamps = true;
