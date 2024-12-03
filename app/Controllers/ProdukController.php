@@ -5,12 +5,10 @@ namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
-class DetailPenjualanController extends ResourceController
+class ProdukController extends ResourceController
 {
-
-    protected $modelName = 'App\Models\DetailPenjualanModel';
+    protected $modelName = 'App\Models\ProdukModel';
     protected $format = 'json';
-    
     /**
      * Return an array of resource objects, themselves in array format.
      *
@@ -21,7 +19,7 @@ class DetailPenjualanController extends ResourceController
         //
         $response = [
             'message' => 'success',
-            'data_detail_penjualan' => $this->model->findAll()
+            'data_produk' => $this->model->orderBy('id_produk', 'DESC')->findAll()
         ];
 
         return $this->respond($response, 200);
@@ -58,10 +56,10 @@ class DetailPenjualanController extends ResourceController
     {
         //
         $rules = $this->validate([
-            'id_penjualan' => 'required',
-            'id_produk' => 'required',
-            'quantity' => 'required',
-            'subtotal' => 'required',
+            'nama_produk' => 'required',
+            'harga' => 'required',
+            'stok' => 'required',
+            'deskripsi' => 'required'
         ]);
 
         if(!$rules) {
@@ -73,14 +71,14 @@ class DetailPenjualanController extends ResourceController
         }
 
         $this->model->insert([
-            'id_penjualan' => esc($this->request->getVar('id_penjualan')),
-            'id_produk' => esc($this->request->getVar('id_produk')),
-            'quantity' => esc($this->request->getVar('quantity')),
-            'subtotal' => esc($this->request->getVar('subtotal')),
+            'nama_produk' => esc($this->request->getVar('nama_produk')),
+            'harga' => esc($this->request->getVar('harga')),            
+            'stok' => esc($this->request->getVar('stok')),
+            'deskripsi' => esc($this->request->getVar('deskripsi'))
         ]);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil dibuat!'  
+            'message'=> 'Data produk berhasil dibuat!'
         ];
 
         return $this->respondCreated($response);
@@ -109,10 +107,10 @@ class DetailPenjualanController extends ResourceController
     {
         //
         $rules = $this->validate([
-            'id_penjualan' => 'required',
-            'id_produk' => 'required',
-            'quantity' => 'required',
-            'subtotal' => 'required',
+            'nama_produk' => 'required',
+            'harga' => 'required',
+            'stok' => 'required',
+            'deskripsi' => 'required'
         ]);
 
         if(!$rules) {
@@ -122,16 +120,16 @@ class DetailPenjualanController extends ResourceController
 
             return $this->failValidationErrors($response);
         }
-
+        
         $this->model->update($id, [
-            'id_penjualan' => esc($this->request->getVar('id_penjualan')),
-            'id_produk' => esc($this->request->getVar('id_produk')),
-            'quantity' => esc($this->request->getVar('quantity')),
-            'subtotal' => esc($this->request->getVar('subtotal')),
+            'nama_produk' => esc($this->request->getVar('nama_produk')),
+            'harga' => esc($this->request->getVar('harga')),            
+            'stok' => esc($this->request->getVar('stok')),
+            'deskripsi' => esc($this->request->getVar('deskripsi'))
         ]);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil diupdate!'
+            'message'=> 'Data produk berhasil diupdate!'
         ];
 
         return $this->respondUpdated($response);
@@ -150,7 +148,7 @@ class DetailPenjualanController extends ResourceController
         $this->model->delete($id);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil dihapus!'
+            'message' => 'Data produk berhasil dihapus!'
         ];
 
         return $this->respondDeleted($response);

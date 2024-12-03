@@ -9,7 +9,7 @@ class PenjualanModel extends Model
     protected $table            = 'penjualan';
     protected $primaryKey       = 'id_penjualan';
     protected $useAutoIncrement = true;
-    protected $allowedFields    = ['tanggal'];
+    protected $allowedFields    = ['tanggal', 'id_pelanggan'];
 
     // Dates
     protected $useTimestamps = false;

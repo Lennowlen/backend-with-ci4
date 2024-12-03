@@ -5,12 +5,10 @@ namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
-class DetailPenjualanController extends ResourceController
+class PenjualanController extends ResourceController
 {
-
-    protected $modelName = 'App\Models\DetailPenjualanModel';
+    protected $modelName = 'App\Models\PenjualanModel';
     protected $format = 'json';
-    
     /**
      * Return an array of resource objects, themselves in array format.
      *
@@ -21,10 +19,16 @@ class DetailPenjualanController extends ResourceController
         //
         $response = [
             'message' => 'success',
-            'data_detail_penjualan' => $this->model->findAll()
+            'data_penjualan' => $this->model->orderBy('id_penjualan', 'DESC')->findAll()
+            // 'data_pelanggan' => $this->model->orderBy('id_penjualan', 'DESC')->findAll()
         ];
 
         return $this->respond($response, 200);
+    }
+
+    public function home()
+    {
+        echo "hallo";
     }
 
     /**
@@ -58,13 +62,11 @@ class DetailPenjualanController extends ResourceController
     {
         //
         $rules = $this->validate([
-            'id_penjualan' => 'required',
-            'id_produk' => 'required',
-            'quantity' => 'required',
-            'subtotal' => 'required',
+            'tanggal' => 'required',
+            'id_pelanggan' => 'required',
         ]);
 
-        if(!$rules) {
+        if (!$rules) {
             $response = [
                 'message' => $this->validator->getErrors()
             ];
@@ -73,14 +75,12 @@ class DetailPenjualanController extends ResourceController
         }
 
         $this->model->insert([
-            'id_penjualan' => esc($this->request->getVar('id_penjualan')),
-            'id_produk' => esc($this->request->getVar('id_produk')),
-            'quantity' => esc($this->request->getVar('quantity')),
-            'subtotal' => esc($this->request->getVar('subtotal')),
+            'tanggal' => esc($this->request->getVar('tanggal')),
+            'id_pelanggan' => esc($this->request->getVar('id_pelanggan'))
         ]);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil dibuat!'  
+            'message' => 'Data penjualan berhasil dibuat!'
         ];
 
         return $this->respondCreated($response);
@@ -109,13 +109,11 @@ class DetailPenjualanController extends ResourceController
     {
         //
         $rules = $this->validate([
-            'id_penjualan' => 'required',
-            'id_produk' => 'required',
-            'quantity' => 'required',
-            'subtotal' => 'required',
+            'tanggal' => 'required',
+            'id_pelanggan' => 'required',
         ]);
 
-        if(!$rules) {
+        if (!$rules) {
             $response = [
                 'message' => $this->validator->getErrors()
             ];
@@ -124,14 +122,12 @@ class DetailPenjualanController extends ResourceController
         }
 
         $this->model->update($id, [
-            'id_penjualan' => esc($this->request->getVar('id_penjualan')),
-            'id_produk' => esc($this->request->getVar('id_produk')),
-            'quantity' => esc($this->request->getVar('quantity')),
-            'subtotal' => esc($this->request->getVar('subtotal')),
+            'tanggal' => esc($this->request->getVar('tanggal')),
+            'id_pelanggan' => esc($this->request->getVar('id_pelanggan'))
         ]);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil diupdate!'
+            'message' => 'Data penjualan berhasil diupdate!'
         ];
 
         return $this->respondUpdated($response);
@@ -150,7 +146,7 @@ class DetailPenjualanController extends ResourceController
         $this->model->delete($id);
 
         $response = [
-            'message' => 'Data detail penjualan berhasil dihapus!'
+            'message' => 'Data penjualan berhasil dihapus!'
         ];
 
         return $this->respondDeleted($response);
