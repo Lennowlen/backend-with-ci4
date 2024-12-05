@@ -5,18 +5,44 @@ namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
+/**
+ * @OA\Tag(
+ *     name="Produk",
+ *     description="Endpoint Produk"
+ * )
+ */
 class ProdukController extends ResourceController
 {
     protected $modelName = 'App\Models\ProdukModel';
     protected $format = 'json';
+
     /**
-     * Return an array of resource objects, themselves in array format.
-     *
-     * @return ResponseInterface
+     * @OA\Get(
+     *     path="/api/produk",
+     *     summary="Mendapatkan daftar semua produk",
+     *     tags={"Produk"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil mendapatkan daftar produk",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data_produk", 
+     *                 type="array", 
+     *                 @OA\Items(
+     *                     @OA\Property(property="id_produk", type="integer"),
+     *                     @OA\Property(property="nama_produk", type="string"),
+     *                     @OA\Property(property="harga", type="number"),
+     *                     @OA\Property(property="stok", type="integer"),
+     *                     @OA\Property(property="deskripsi", type="string")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function index()
     {
-        //
         $response = [
             'message' => 'success',
             'data_produk' => $this->model->orderBy('id_produk', 'DESC')->findAll()
@@ -26,35 +52,68 @@ class ProdukController extends ResourceController
     }
 
     /**
-     * Return the properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
+     * @OA\Get(
+     *     path="/api/produk/{id}",
+     *     summary="Mendapatkan detail produk berdasarkan ID",
+     *     tags={"Produk"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID produk",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil mendapatkan detail produk"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Produk tidak ditemukan"
+     *     )
+     * )
      */
     public function show($id = null)
     {
-        //
+        $produk = $this->model->find($id);
+        
+        if (!$produk) {
+            return $this->failNotFound('Produk tidak ditemukan');
+        }
+        
+        return $this->respond([
+            'message' => 'success',
+            'data_produk' => $produk
+        ], 200);
     }
 
     /**
-     * Return a new resource object, with default properties.
-     *
-     * @return ResponseInterface
-     */
-    public function new()
-    {
-        //
-    }
-
-    /**
-     * Create a new resource object, from "posted" parameters.
-     *
-     * @return ResponseInterface
+     * @OA\Post(
+     *     path="/api/produk",
+     *     summary="Membuat produk baru",
+     *     tags={"Produk"},
+     *     @OA\RequestBody(
+     *         description="Data produk baru",
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="nama_produk", type="string", example="Laptop Gaming"),
+     *             @OA\Property(property="harga", type="number", example="12999000"),
+     *             @OA\Property(property="stok", type="integer", example="50"),
+     *             @OA\Property(property="deskripsi", type="string", example="Laptop gaming dengan spesifikasi tinggi")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Berhasil membuat produk baru"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validasi gagal"
+     *     )
+     * )
      */
     public function create()
     {
-        //
         $rules = $this->validate([
             'nama_produk' => 'required',
             'harga' => 'required',
@@ -85,27 +144,39 @@ class ProdukController extends ResourceController
     }
 
     /**
-     * Return the editable properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
-    public function edit($id = null)
-    {
-        //
-    }
-
-    /**
-     * Add or update a model resource, from "posted" properties.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
+     * @OA\Put(
+     *     path="/api/produk/{id}",
+     *     summary="Memperbarui data produk",
+     *     tags={"Produk"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID produk",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         description="Data produk yang diperbarui",
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="nama_produk", type="string", example="Laptop Gaming Terbaru"),
+     *             @OA\Property(property="harga", type="number", example="13999000"),
+     *             @OA\Property(property="stok", type="integer", example="40"),
+     *             @OA\Property(property="deskripsi", type="string", example="Laptop gaming dengan spesifikasi terkini")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil memperbarui data produk"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validasi gagal"
+     *     )
+     * )
      */
     public function update($id = null)
     {
-        //
         $rules = $this->validate([
             'nama_produk' => 'required',
             'harga' => 'required',
@@ -136,15 +207,35 @@ class ProdukController extends ResourceController
     }
 
     /**
-     * Delete the designated resource object from the model.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
+     * @OA\Delete(
+     *     path="/api/produk/{id}",
+     *     summary="Menghapus produk",
+     *     tags={"Produk"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID produk",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil menghapus produk"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Produk tidak ditemukan"
+     *     )
+     * )
      */
     public function delete($id = null)
     {
-        //
+        $produk = $this->model->find($id);
+        
+        if (!$produk) {
+            return $this->failNotFound('Produk tidak ditemukan');
+        }
+        
         $this->model->delete($id);
 
         $response = [

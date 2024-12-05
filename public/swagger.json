@@ -1,0 +1,814 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Dokumentasi API Penjualan",
+        "description": "API untuk manajemen data penjualan",
+        "contact": {
+            "name": "Muhammad Gibran",
+            "email": "gibran.devv@email.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/detail-penjualan": {
+            "get": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Mendapatkan daftar semua detail penjualan",
+                "operationId": "e32d3be9078de793b515a638427ce989",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar detail penjualan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_detail_penjualan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_detail_penjualan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "id_penjualan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "id_produk": {
+                                                        "type": "integer"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer"
+                                                    },
+                                                    "subtotal": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Membuat detail penjualan baru",
+                "operationId": "0428ff9f2361c800a52835eab13e40a4",
+                "requestBody": {
+                    "description": "Data detail penjualan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_penjualan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_produk": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "subtotal": {
+                                        "type": "number",
+                                        "example": 100000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat detail penjualan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/detail-penjualan/{id}": {
+            "get": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Mendapatkan detail penjualan berdasarkan ID",
+                "operationId": "dcd781fbdefee0071e4598446b2f747f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan detail penjualan"
+                    },
+                    "404": {
+                        "description": "Detail penjualan tidak ditemukan"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Memperbarui data detail penjualan",
+                "operationId": "1c8997092f9f3276f5b498065834eec9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID detail penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data detail penjualan yang diperbarui",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_penjualan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_produk": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "subtotal": {
+                                        "type": "number",
+                                        "example": 150000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil memperbarui data detail penjualan"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Menghapus detail penjualan",
+                "operationId": "5dc0a7624b34c1810d90e1f77916f969",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID detail penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus detail penjualan"
+                    },
+                    "404": {
+                        "description": "Detail penjualan tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/pelanggan": {
+            "get": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Mendapatkan daftar semua pelanggan",
+                "operationId": "b935c37d4f5ad2314d592eedb92aba21",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar pelanggan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_pelanggan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_pelanggan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_pelanggan": {
+                                                        "type": "string"
+                                                    },
+                                                    "alamat": {
+                                                        "type": "string"
+                                                    },
+                                                    "telepon": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Membuat pelanggan baru",
+                "operationId": "fe7d9da04e5d6876b83e780799597c92",
+                "requestBody": {
+                    "description": "Data pelanggan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_pelanggan": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "alamat": {
+                                        "type": "string",
+                                        "example": "Jl. Contoh No.123"
+                                    },
+                                    "telepon": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat pelanggan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/pelanggan/{id}": {
+            "get": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Mendapatkan detail pelanggan berdasarkan ID",
+                "operationId": "1a8a90bb364c57f82cc2c44b1c385e75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID pelanggan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan detail pelanggan"
+                    },
+                    "404": {
+                        "description": "Pelanggan tidak ditemukan"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Memperbarui data pelanggan",
+                "operationId": "bdae5065b6bd1643790d30366c079c22",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID pelanggan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data pelanggan yang diperbarui",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_pelanggan": {
+                                        "type": "string",
+                                        "example": "John Doe Updated"
+                                    },
+                                    "alamat": {
+                                        "type": "string",
+                                        "example": "Jl. Contoh Diperbarui No.456"
+                                    },
+                                    "telepon": {
+                                        "type": "string",
+                                        "example": "087654321098"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil memperbarui data pelanggan"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Menghapus pelanggan",
+                "operationId": "37d2e71208bceecb7cf5417e6305a451",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID pelanggan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus pelanggan"
+                    },
+                    "404": {
+                        "description": "Pelanggan tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/penjualan": {
+            "get": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Mendapatkan daftar semua penjualan",
+                "operationId": "c6a7178b74a29a20e4615c0d783b072d",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar penjualan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_penjualan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_penjualan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "tanggal": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "id_pelanggan": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Membuat penjualan baru",
+                "operationId": "143bf8599062d247c4ab093b8ad7df5a",
+                "requestBody": {
+                    "description": "Data penjualan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tanggal": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-12-04"
+                                    },
+                                    "id_pelanggan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat penjualan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/penjualan/{id}": {
+            "get": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Mendapatkan detail penjualan berdasarkan ID",
+                "operationId": "aecc3b47fcaf3aee897807f0c23194bb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan detail penjualan"
+                    },
+                    "404": {
+                        "description": "Penjualan tidak ditemukan"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Memperbarui data penjualan",
+                "operationId": "2fa08c86459b832668bb61614f077882",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data penjualan yang diperbarui",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tanggal": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-12-05"
+                                    },
+                                    "id_pelanggan": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil memperbarui data penjualan"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Menghapus penjualan",
+                "operationId": "948a0e1923f1606eee3e3285ed288d78",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID penjualan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus penjualan"
+                    },
+                    "404": {
+                        "description": "Penjualan tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/produk": {
+            "get": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Mendapatkan daftar semua produk",
+                "operationId": "48c9c12325e607f702b0dd9e9e1fec8e",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar produk",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_produk": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_produk": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_produk": {
+                                                        "type": "string"
+                                                    },
+                                                    "harga": {
+                                                        "type": "number"
+                                                    },
+                                                    "stok": {
+                                                        "type": "integer"
+                                                    },
+                                                    "deskripsi": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Membuat produk baru",
+                "operationId": "f1657def8d03a37084712f6f9d93120f",
+                "requestBody": {
+                    "description": "Data produk baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_produk": {
+                                        "type": "string",
+                                        "example": "Laptop Gaming"
+                                    },
+                                    "harga": {
+                                        "type": "number",
+                                        "example": "12999000"
+                                    },
+                                    "stok": {
+                                        "type": "integer",
+                                        "example": "50"
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Laptop gaming dengan spesifikasi tinggi"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat produk baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/produk/{id}": {
+            "get": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Mendapatkan detail produk berdasarkan ID",
+                "operationId": "7bbd003e8c74c6e11e87515f685462a5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID produk",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan detail produk"
+                    },
+                    "404": {
+                        "description": "Produk tidak ditemukan"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Memperbarui data produk",
+                "operationId": "b9cce13711bd39415192f179f00718db",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID produk",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data produk yang diperbarui",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_produk": {
+                                        "type": "string",
+                                        "example": "Laptop Gaming Terbaru"
+                                    },
+                                    "harga": {
+                                        "type": "number",
+                                        "example": "13999000"
+                                    },
+                                    "stok": {
+                                        "type": "integer",
+                                        "example": "40"
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Laptop gaming dengan spesifikasi terkini"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil memperbarui data produk"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Menghapus produk",
+                "operationId": "ec35e29c71eb7046be687838fc1f2128",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID produk",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus produk"
+                    },
+                    "404": {
+                        "description": "Produk tidak ditemukan"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Detail Penjualan",
+            "description": "Endpoint Detail Penjualan"
+        },
+        {
+            "name": "Pelanggan",
+            "description": "Endpoint Pelanggan"
+        },
+        {
+            "name": "Penjualan",
+            "description": "Endpoint Penjualan"
+        },
+        {
+            "name": "Produk",
+            "description": "Endpoint Produk"
+        }
+    ]
+}
