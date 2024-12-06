@@ -58,50 +58,6 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "tags": [
-                    "Detail Penjualan"
-                ],
-                "summary": "Membuat detail penjualan baru",
-                "operationId": "0428ff9f2361c800a52835eab13e40a4",
-                "requestBody": {
-                    "description": "Data detail penjualan baru",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "id_penjualan": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "id_produk": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "subtotal": {
-                                        "type": "number",
-                                        "example": 100000
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Berhasil membuat detail penjualan baru"
-                    },
-                    "400": {
-                        "description": "Validasi gagal"
-                    }
-                }
             }
         },
         "/api/detail-penjualan/{id}": {
@@ -213,6 +169,52 @@
                 }
             }
         },
+        "/api/detail-penjualan/create": {
+            "post": {
+                "tags": [
+                    "Detail Penjualan"
+                ],
+                "summary": "Membuat detail penjualan baru",
+                "operationId": "040991d9fe957b0836d287aa58e47d42",
+                "requestBody": {
+                    "description": "Data detail penjualan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_penjualan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_produk": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "subtotal": {
+                                        "type": "number",
+                                        "example": 100000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat detail penjualan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
         "/api/pelanggan": {
             "get": {
                 "tags": [
@@ -256,46 +258,6 @@
                                 }
                             }
                         }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Pelanggan"
-                ],
-                "summary": "Membuat pelanggan baru",
-                "operationId": "fe7d9da04e5d6876b83e780799597c92",
-                "requestBody": {
-                    "description": "Data pelanggan baru",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nama_pelanggan": {
-                                        "type": "string",
-                                        "example": "John Doe"
-                                    },
-                                    "alamat": {
-                                        "type": "string",
-                                        "example": "Jl. Contoh No.123"
-                                    },
-                                    "telepon": {
-                                        "type": "string",
-                                        "example": "081234567890"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Berhasil membuat pelanggan baru"
-                    },
-                    "400": {
-                        "description": "Validasi gagal"
                     }
                 }
             }
@@ -405,6 +367,48 @@
                 }
             }
         },
+        "/api/pelanggan/create": {
+            "post": {
+                "tags": [
+                    "Pelanggan"
+                ],
+                "summary": "Membuat pelanggan baru",
+                "operationId": "498fce8e34caf34ad8c9490f69a330f9",
+                "requestBody": {
+                    "description": "Data pelanggan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_pelanggan": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "alamat": {
+                                        "type": "string",
+                                        "example": "Jl. Contoh No.123"
+                                    },
+                                    "telepon": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat pelanggan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
         "/api/penjualan": {
             "get": {
                 "tags": [
@@ -446,43 +450,6 @@
                                 }
                             }
                         }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Penjualan"
-                ],
-                "summary": "Membuat penjualan baru",
-                "operationId": "143bf8599062d247c4ab093b8ad7df5a",
-                "requestBody": {
-                    "description": "Data penjualan baru",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "tanggal": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2023-12-04"
-                                    },
-                                    "id_pelanggan": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Berhasil membuat penjualan baru"
-                    },
-                    "400": {
-                        "description": "Validasi gagal"
                     }
                 }
             }
@@ -589,6 +556,45 @@
                 }
             }
         },
+        "/api/penjualan/create": {
+            "post": {
+                "tags": [
+                    "Penjualan"
+                ],
+                "summary": "Membuat penjualan baru",
+                "operationId": "700252c0366540d84c24c86b8c729fdb",
+                "requestBody": {
+                    "description": "Data penjualan baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tanggal": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2023-12-04"
+                                    },
+                                    "id_pelanggan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat penjualan baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
         "/api/produk": {
             "get": {
                 "tags": [
@@ -635,50 +641,6 @@
                                 }
                             }
                         }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Produk"
-                ],
-                "summary": "Membuat produk baru",
-                "operationId": "f1657def8d03a37084712f6f9d93120f",
-                "requestBody": {
-                    "description": "Data produk baru",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nama_produk": {
-                                        "type": "string",
-                                        "example": "Laptop Gaming"
-                                    },
-                                    "harga": {
-                                        "type": "number",
-                                        "example": "12999000"
-                                    },
-                                    "stok": {
-                                        "type": "integer",
-                                        "example": "50"
-                                    },
-                                    "deskripsi": {
-                                        "type": "string",
-                                        "example": "Laptop gaming dengan spesifikasi tinggi"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Berhasil membuat produk baru"
-                    },
-                    "400": {
-                        "description": "Validasi gagal"
                     }
                 }
             }
@@ -788,6 +750,52 @@
                     },
                     "404": {
                         "description": "Produk tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/produk/create": {
+            "post": {
+                "tags": [
+                    "Produk"
+                ],
+                "summary": "Membuat produk baru",
+                "operationId": "d0e8f1f2c6e193ec017f21bbebddbb06",
+                "requestBody": {
+                    "description": "Data produk baru",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nama_produk": {
+                                        "type": "string",
+                                        "example": "Laptop Gaming"
+                                    },
+                                    "harga": {
+                                        "type": "number",
+                                        "example": "12999000"
+                                    },
+                                    "stok": {
+                                        "type": "integer",
+                                        "example": "50"
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Laptop gaming dengan spesifikasi tinggi"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat produk baru"
+                    },
+                    "400": {
+                        "description": "Validasi gagal"
                     }
                 }
             }

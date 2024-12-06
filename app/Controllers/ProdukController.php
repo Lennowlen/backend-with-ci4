@@ -89,7 +89,7 @@ class ProdukController extends ResourceController
 
     /**
      * @OA\Post(
-     *     path="/api/produk",
+     *     path="/api/produk/create",
      *     summary="Membuat produk baru",
      *     tags={"Produk"},
      *     @OA\RequestBody(

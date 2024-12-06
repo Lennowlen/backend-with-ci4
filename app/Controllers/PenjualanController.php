@@ -87,7 +87,7 @@ class PenjualanController extends ResourceController
 
     /**
      * @OA\Post(
-     *     path="/api/penjualan",
+     *     path="/api/penjualan/create",
      *     summary="Membuat penjualan baru",
      *     tags={"Penjualan"},
      *     @OA\RequestBody(

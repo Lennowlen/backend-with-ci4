@@ -98,7 +98,7 @@ class PelangganController extends ResourceController
 
     /**
      * @OA\Post(
-     *     path="/api/pelanggan",
+     *     path="/api/pelanggan/create",
      *     summary="Membuat pelanggan baru",
      *     tags={"Pelanggan"},
      *     @OA\RequestBody(
