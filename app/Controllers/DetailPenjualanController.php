@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\DetailPenjualanModel;
+use App\Models\ProdukModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -13,9 +15,19 @@ use CodeIgniter\RESTful\ResourceController;
  */
 class DetailPenjualanController extends ResourceController
 {
-    protected $modelName = 'App\Models\DetailPenjualanModel';
-    protected $format = 'json';
-    
+    protected $modelProduk;
+    protected $modelDetailPenjualan;
+
+    public function __construct()
+    {
+        // protected $modelName = 'App\Models\DetailPenjualanModel';
+        // protected $modelName2 = 'App\Models\ProdukModel';
+        // protected $format = 'json';
+
+        $this->modelProduk = new ProdukModel();
+        $this->modelDetailPenjualan = new DetailPenjualanModel();
+    }
+
     /**
      * @OA\Get(
      *     path="/api/detail-penjualan",
@@ -45,7 +57,7 @@ class DetailPenjualanController extends ResourceController
     {
         $response = [
             'message' => 'success',
-            'data_detail_penjualan' => $this->model->findAll()
+            'data_detail_penjualan' => $this->modelDetailPenjualan->findAll()
         ];
 
         return $this->respond($response, 200);
@@ -76,12 +88,12 @@ class DetailPenjualanController extends ResourceController
     public function show($id = null)
     {
         // $detailPenjualan = $this->model->find($id);
-        $detailPenjualan = $this->model->where('id_penjualan', $id)->first();
-        
+        $detailPenjualan = $this->modelDetailPenjualan->where('id_penjualan', $id)->first();
+
         if (!$detailPenjualan) {
             return $this->failNotFound('Detail penjualan tidak ditemukan');
         }
-        
+
         return $this->respond([
             'message' => 'success',
             'data_detail_penjualan' => $detailPenjualan
@@ -97,10 +109,13 @@ class DetailPenjualanController extends ResourceController
      *         description="Data detail penjualan baru",
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="id_penjualan", type="integer", example=1),
-     *             @OA\Property(property="id_produk", type="integer", example=1),
-     *             @OA\Property(property="quantity", type="integer", example=5),
-     *             @OA\Property(property="subtotal", type="number", example=100000)
+     *             type="array",
+     *             @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id_penjualan", type="integer", example=1),
+     *                  @OA\Property(property="id_produk", type="integer", example=1),
+     *                  @OA\Property(property="quantity", type="integer", example=5)
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -115,33 +130,86 @@ class DetailPenjualanController extends ResourceController
      */
     public function create()
     {
-        $rules = $this->validate([
-            'id_penjualan' => 'required',
-            'id_produk' => 'required',
-            'quantity' => 'required',
-            'subtotal' => 'required',
-        ]);
+        // $rules = $this->validate([
+        //     'id_penjualan' => 'required',
+        //     'id_produk' => 'required',
+        //     'quantity' => 'required',
+        //     'subtotal' => 'required'
+        // ]);
 
-        if(!$rules) {
-            $response = [
-                'message' => $this->validator->getErrors()
-            ];
+        // if(!$rules) {
+        //     $response = [
+        //         'message' => $this->validator->getErrors()
+        //     ];
 
-            return $this->failValidationErrors($response);
+        //     return $this->failValidationErrors($response);
+        // }
+
+        // $this->modelDetailPenjualan->insertBatch([
+        //     'id_penjualan' => esc($this->request->getVar('id_penjualan')),
+        //     'id_produk' => esc($this->request->getVar('id_produk')),
+        //     'quantity' => esc($this->request->getVar('quantity')),
+        //     'subtotal' => esc($this->request->getVar('subtotal')),
+        //     // 'subtotal' => $this->modelProduk->where('id_produk', esc($this->request->getVar('id_produk')))->first()->harga * esc($this->request->getVar('quantity')),
+        // ]);
+
+        try {
+
+            $data = $this->request->getJSON(true);
+
+            if (!$data || !is_array($data)) {
+                return $this->failValidationErrors('Data harus berupa array.');
+            }
+
+            $detailData = [];
+            foreach ($data as $item) {
+                // Validasi input
+                if (!isset($item['id_produk'], $item['quantity'], $item['id_penjualan'])) {
+                    return $this->failValidationErrors('Data harus memiliki id_produk, quantity, dan id_penjualan.');
+                }
+
+                $produk = $this->modelProduk->find($item['id_produk']);
+                if (!$produk) {
+                    return $this->failNotFound("Produk dengan ID {$item['id_produk']} tidak ditemukan.");
+                }
+
+                // Cek stok produk
+                if ($produk['stok'] < $item['quantity']) {
+                    return $this->failValidationErrors("Stok untuk produk ID {$item['id_produk']} tidak mencukupi. Tersedia: {$produk['stok']}");
+                }
+
+                // Pengurangan stok produk
+                $produk['stok'] -= $item['quantity'];
+                $this->modelProduk->update($item['id_produk'], ['stok' => $produk['stok']]);
+
+                // subtotal
+                $subtotal = $produk['harga'] * $item['quantity'];
+
+                // insertBatch
+                $detailData[] = [
+                    'id_penjualan' => $item['id_penjualan'],
+                    'id_produk' => $item['id_produk'],
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $subtotal,
+                ];
+            }
+
+            // Insert data ke database
+            $this->modelDetailPenjualan->insertBatch($detailData);
+
+            return $this->respondCreated(['message' => 'Data detail penjualan berhasil dibuat!']);
+        } catch (\Exception $e) {
+
+            log_message('error', 'Exception: ' . $e->getMessage() . 'on line ' . $e->getLine() . 'on file ' . $e->getFile());
+
+            return $this->respond([
+                'status' => 500,
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
         }
-
-        $this->model->insert([
-            'id_penjualan' => esc($this->request->getVar('id_penjualan')),
-            'id_produk' => esc($this->request->getVar('id_produk')),
-            'quantity' => esc($this->request->getVar('quantity')),
-            'subtotal' => esc($this->request->getVar('subtotal')),
-        ]);
-
-        $response = [
-            'message' => 'Data detail penjualan berhasil dibuat!'  
-        ];
-
-        return $this->respondCreated($response);
     }
 
     /**
@@ -185,7 +253,7 @@ class DetailPenjualanController extends ResourceController
             'subtotal' => 'required',
         ]);
 
-        if(!$rules) {
+        if (!$rules) {
             $response = [
                 'message' => $this->validator->getErrors()
             ];
@@ -193,7 +261,7 @@ class DetailPenjualanController extends ResourceController
             return $this->failValidationErrors($response);
         }
 
-        $this->model->update($id, [
+        $this->modelDetailPenjualan->update($id, [
             'id_penjualan' => esc($this->request->getVar('id_penjualan')),
             'id_produk' => esc($this->request->getVar('id_produk')),
             'quantity' => esc($this->request->getVar('quantity')),
@@ -231,13 +299,13 @@ class DetailPenjualanController extends ResourceController
      */
     public function delete($id = null)
     {
-        $detailPenjualan = $this->model->find($id);
-        
+        $detailPenjualan = $this->modelDetailPenjualan->find($id);
+
         if (!$detailPenjualan) {
             return $this->failNotFound('Detail penjualan tidak ditemukan');
         }
-        
-        $this->model->delete($id);
+
+        $this->modelDetailPenjualan->delete($id);
 
         $response = [
             'message' => 'Data detail penjualan berhasil dihapus!'

@@ -182,25 +182,24 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "id_penjualan": {
-                                        "type": "integer",
-                                        "example": 1
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "id_penjualan": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "id_produk": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantity": {
+                                            "type": "integer",
+                                            "example": 5
+                                        }
                                     },
-                                    "id_produk": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "subtotal": {
-                                        "type": "number",
-                                        "example": 100000
-                                    }
-                                },
-                                "type": "object"
+                                    "type": "object"
+                                }
                             }
                         }
                     }
