@@ -35,5 +35,9 @@ $routes->post('/api/detail-penjualan/create', 'DetailPenjualanController::create
 $routes->put('/api/detail-penjualan/(:num)', 'DetailPenjualanController::update/$1');
 $routes->delete('/api/detail-penjualan/(:num)', 'DetailPenjualanController::delete/$1');
 
+// invoice
+$routes->get('/api/invoice', 'VWInvoiceController::index');
+$routes->get('/api/invoice/(:num)', 'VWInvoiceController::show/$1');
+$routes->get('/api/invoice/filter', 'VWInvoiceController::filterByDate');
 
 // $routes->setAutoRoute(true); // for allow access all route

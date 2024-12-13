@@ -798,6 +798,129 @@
                     }
                 }
             }
+        },
+        "/api/invoice": {
+            "get": {
+                "tags": [
+                    "Invoice Pelanggan"
+                ],
+                "summary": "Mendapatkan daftar semua ivoice pelanggan",
+                "operationId": "740f522e3c98f692c4abbe0e4a8724af",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar invoice pelanggan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_view_invoice": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_invoice": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_pelanggan": {
+                                                        "type": "string"
+                                                    },
+                                                    "tanggal": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "produk": {
+                                                        "type": "string"
+                                                    },
+                                                    "grand_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invoice/{id}": {
+            "get": {
+                "tags": [
+                    "Invoice Pelanggan"
+                ],
+                "summary": "Mendapatkan detail invoice pelanggan berdasarkan ID",
+                "operationId": "1e74bfc16a33271d4a533b40151e2c6f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID invoice pelanggan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan detail invoice pelanggan"
+                    },
+                    "404": {
+                        "description": "Invoice Pelanggan tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/invoice/filter": {
+            "get": {
+                "tags": [
+                    "Invoice Pelanggan"
+                ],
+                "summary": "Mendapatkan data berdasarkan rentang tanggal",
+                "operationId": "ee9eae01459226245a13bd249fa6969d",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Tanggal mulai untuk filter [format: YYYY-MM-DD]",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-12-11"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Tanggal akhir untuk filter [format: YYYY-MM-DD]",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-12-12"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data yang difilter berdasarkan rentang tanggal"
+                    },
+                    "400": {
+                        "description": "Format tanggal tidak valid atau parameter tidak ditemukan"
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan untuk rentang tanggal yang diberikan"
+                    }
+                }
+            }
         }
     },
     "tags": [
@@ -816,6 +939,10 @@
         {
             "name": "Produk",
             "description": "Endpoint Produk"
+        },
+        {
+            "name": "Invoice Pelanggan",
+            "description": "Endpoint Invoice Pelanggan"
         }
     ]
 }
