@@ -76,19 +76,19 @@ class VWInvoiceController extends ResourceController
      *     )
      * )
      */
-    public function show($id = null)
+    public function showInvoice($id = null)
     {
         //
-        $invoice = $this->model->find($id);
+        $invoice = [
+            'message' => 'success',
+            'data_view_invoice' => $this->model->find($id)
+        ];
 
         if (!$invoice) {
             return $this->failNotFound('Pelanggan tidak ditemukan');
         }
 
-        return $this->respond([
-            'message' => 'success',
-            'data_view_invoice' => $invoice
-        ], 200);
+        return $this->respond($invoice, 200);
     }
 
     /**
@@ -147,12 +147,15 @@ class VWInvoiceController extends ResourceController
 
         try {
 
-            $data = $this->model->filterByDate($startDate, $endDate);
+            $data = [
+                'message' => 'success',
+                'data_filter_by_date' => $this->model->orderBy('id', 'DESC')->filterByDate($startDate, $endDate)
+            ];
 
 
-            if (empty($data)) {
+            if (!$data) {
                 $response = [
-                    'message' => $this->failNotFound()
+                    'message' => $this->failNotFound('Data not found!')
                 ];
 
                 return $this->respond($response);
@@ -164,6 +167,76 @@ class VWInvoiceController extends ResourceController
         }
     }
 
+    public function filterById($id = null)
+    {
+
+
+        try {
+
+            $data = [
+                'message' => 'success',
+                'data_filter_date_byid' => $this->model->filterById($id)
+            ];
+
+            if (!$data[1]) {
+                $response = [
+                    'message' => $this->failNotFound('Pelanggan tidak ditemukan')
+                ];
+                return $this->respond($response, 404);
+            }
+
+            return $this->respond($data, 200);
+        } catch (\Exception $e) {
+            return $this->failServerError($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/invoice/detail",
+     *     summary="Mendapatkan daftar detail semua ivoice pelanggan",
+     *     tags={"Invoice Pelanggan"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil mendapatkan daftar invoice pelanggan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data_view_invoice", 
+     *                 type="array", 
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="id_penjualan", type="integer"),
+     *                     @OA\Property(property="tanggal", type="string", format="date"),
+     *                     @OA\Property(property="id_pelanggan", type="integer"),
+     *                     @OA\Property(property="nama_pelanggan", type="string"),
+     *                     @OA\Property(property="alamat", type="string"),
+     *                     @OA\Property(property="telepon", type="string"),
+     *                     @OA\Property(property="id_produk", type="integer"),
+     *                     @OA\Property(property="nama_produk", type="string"),
+     *                     @OA\Property(property="harga", type="number"),
+     *                     @OA\Property(property="quantity", type="integer"),
+     *                     @OA\Property(property="subtotal", type="number")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getAll() 
+    {
+        try {
+
+            $data = [
+                'message' => 'success',
+                'data_detail_invoice_pelanggan' => $this->model->get_All()
+            ];
+
+            return $this->respond($data, 200);
+        } catch (\Exception $e) {
+            return $this->failServerError($e->getMessage());
+        }
+    }
     public function new()
     {
         //

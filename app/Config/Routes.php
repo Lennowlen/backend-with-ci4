@@ -37,7 +37,8 @@ $routes->delete('/api/detail-penjualan/(:num)', 'DetailPenjualanController::dele
 
 // invoice
 $routes->get('/api/invoice', 'VWInvoiceController::index');
-$routes->get('/api/invoice/(:num)', 'VWInvoiceController::show/$1');
+$routes->get('/api/invoice/(:num)', 'VWInvoiceController::showInvoice/$1');
 $routes->get('/api/invoice/filter', 'VWInvoiceController::filterByDate');
+$routes->get('/api/invoice/detail', 'VWInvoiceController::getAll');
 
 // $routes->setAutoRoute(true); // for allow access all route

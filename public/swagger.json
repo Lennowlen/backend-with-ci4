@@ -856,7 +856,7 @@
                     "Invoice Pelanggan"
                 ],
                 "summary": "Mendapatkan detail invoice pelanggan berdasarkan ID",
-                "operationId": "1e74bfc16a33271d4a533b40151e2c6f",
+                "operationId": "8ac9b0459488f2d5ac2fd3ecc8ac10a4",
                 "parameters": [
                     {
                         "name": "id",
@@ -918,6 +918,78 @@
                     },
                     "404": {
                         "description": "Data tidak ditemukan untuk rentang tanggal yang diberikan"
+                    }
+                }
+            }
+        },
+        "/api/invoice/detail": {
+            "get": {
+                "tags": [
+                    "Invoice Pelanggan"
+                ],
+                "summary": "Mendapatkan daftar detail semua ivoice pelanggan",
+                "operationId": "d0e688722d31e448c4e14916d8894ab2",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan daftar invoice pelanggan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data_view_invoice": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "id_penjualan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "tanggal": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "id_pelanggan": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_pelanggan": {
+                                                        "type": "string"
+                                                    },
+                                                    "alamat": {
+                                                        "type": "string"
+                                                    },
+                                                    "telepon": {
+                                                        "type": "string"
+                                                    },
+                                                    "id_produk": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nama_produk": {
+                                                        "type": "string"
+                                                    },
+                                                    "harga": {
+                                                        "type": "number"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer"
+                                                    },
+                                                    "subtotal": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }

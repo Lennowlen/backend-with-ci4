@@ -88,7 +88,7 @@ class DetailPenjualanController extends ResourceController
     public function show($id = null)
     {
         // $detailPenjualan = $this->model->find($id);
-        $detailPenjualan = $this->modelDetailPenjualan->where('id_penjualan', $id)->first();
+        $detailPenjualan = $this->modelDetailPenjualan->where('id_penjualan', $id)->findAll();
 
         if (!$detailPenjualan) {
             return $this->failNotFound('Detail penjualan tidak ditemukan');
