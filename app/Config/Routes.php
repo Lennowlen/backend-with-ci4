@@ -41,4 +41,6 @@ $routes->get('/api/invoice/(:num)', 'VWInvoiceController::showInvoice/$1');
 $routes->get('/api/invoice/filter', 'VWInvoiceController::filterByDate');
 $routes->get('/api/invoice/detail', 'VWInvoiceController::getAll');
 
+$routes->get('/api/invoice/excel/create', 'VWInvoiceController::createExcel');
+
 // $routes->setAutoRoute(true); // for allow access all route

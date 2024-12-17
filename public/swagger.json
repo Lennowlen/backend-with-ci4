@@ -993,6 +993,40 @@
                     }
                 }
             }
+        },
+        "/api/invoice/excel/create": {
+            "get": {
+                "tags": [
+                    "Invoice Pelanggan"
+                ],
+                "summary": "Generate Excel file containing invoice data",
+                "description": "This endpoint generates and downloads an Excel file that includes a summary of all invoice data.",
+                "operationId": "add7be923ec99d7cdadbbcbe95212421",
+                "responses": {
+                    "200": {
+                        "description": "Excel file successfully generated and downloaded.",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "The MIME type of the returned file (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                }
+                            },
+                            "Content-Disposition": {
+                                "description": "Attachment header with the filename",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "attachment; filename=rekap_all_data_invoice_2024-06-14.xlsx"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error occurred while generating the Excel file."
+                    }
+                }
+            }
         }
     },
     "tags": [
