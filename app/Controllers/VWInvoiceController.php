@@ -10,8 +10,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-use function App\Helpers\formatRupiah;
-
 /**
  * @OA\Tag(
  *     name="Invoice Pelanggan",
@@ -272,71 +270,159 @@ class VWInvoiceController extends ResourceController
      */
     public function createExcel()
     {
+        try {
 
-        $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
-        $filename = 'rekap_all_data_invoice_' . date('Y-m-d') . '.xlsx';
-        $spreadsheet = new Spreadsheet();
-        $activeWorksheet = $spreadsheet->getActiveSheet();
-        // $activeWorksheet->setCellValue('A1', 'Hello World !');
+            $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
+            $filename = 'rekap_all_data_invoice_' . date('Y-m-d') . '.xlsx';
+            $spreadsheet = new Spreadsheet();
+            $activeWorksheet = $spreadsheet->getActiveSheet();
+    
+            $spreadsheet->getActiveSheet()->mergeCells('A1:D1');
+            $spreadsheet->getActiveSheet()->mergeCells('A3:B3');
+            $spreadsheet->getActiveSheet()->mergeCells('C3:E3');
+    
+            $activeWorksheet->setCellValue('A1', 'Rekap All Data Invoice');
+            $activeWorksheet->setCellValue('A3', 'Tanggal Rekap');
+            $activeWorksheet->setCellValue('C3', date('Y-m-d'));
+            $activeWorksheet->setCellValue('A4', 'ID');
+            $activeWorksheet->setCellValue('B4', 'ID Penjualan');
+            $activeWorksheet->setCellValue('C4', 'Tanggal');
+            $activeWorksheet->setCellValue('D4', 'ID Pelanggan');
+            $activeWorksheet->setCellValue('E4', 'Nama Pelanggan');
+            $activeWorksheet->setCellValue('F4', 'Alamat');
+            $activeWorksheet->setCellValue('G4', 'Telepon');
+            $activeWorksheet->setCellValue('H4', 'ID Produk');
+            $activeWorksheet->setCellValue('I4', 'Nama Produk');
+            $activeWorksheet->setCellValue('J4', 'Harga');
+            $activeWorksheet->setCellValue('K4', 'Quantity');
+            $activeWorksheet->setCellValue('L4', 'Subtotal');
+    
+            $activeWorksheet->getStyle('A1:L4')->getFont()->setBold(true);
+    
+            foreach (range('A', 'L') as $columnID) {
+                $activeWorksheet->getColumnDimension($columnID)->setWidth(120, 'pt');
+            }
+    
+            $rows = 5;
+    
+            $all_data_invoice = $this->model->get_All();
+    
+            // dd($all_data_invoice);
+    
+            foreach ($all_data_invoice as $user_data) {
+    
+                // dd($user_data);
+                $activeWorksheet->setCellValue('A' . $rows, $user_data['id']);
+                $activeWorksheet->setCellValue('B' . $rows, $user_data['id_penjualan']);
+                $activeWorksheet->setCellValue('C' . $rows, $user_data['tanggal']);
+                $activeWorksheet->setCellValue('D' . $rows, $user_data['id_pelanggan']);
+                $activeWorksheet->setCellValue('E' . $rows, $user_data['nama_pelanggan']);
+                $activeWorksheet->setCellValue('F' . $rows, $user_data['alamat']);
+                $activeWorksheet->setCellValue('G' . $rows, $user_data['telepon']);
+                $activeWorksheet->setCellValue('H' . $rows, $user_data['id_produk']);
+                $activeWorksheet->setCellValue('I' . $rows, $user_data['nama_produk']);
+                $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($user_data['harga'], 'IDR'));
+                $activeWorksheet->setCellValue('K' . $rows, $user_data['quantity']);
+                $activeWorksheet->setCellValue('L' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
+                $activeWorksheet->getStyle('A1:L' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $rows++;
+            }
+    
+    
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header("Content-Disposition: attachment;filename=$filename");
+            header('Cache-Control: max-age=0');
+    
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        } catch(\Exception $e) {
+            return $this->failServerError($e->getMessage());
+        }
+    }
 
-        $spreadsheet->getActiveSheet()->mergeCells('A1:D1');
-        $spreadsheet->getActiveSheet()->mergeCells('A3:B3');
-        $spreadsheet->getActiveSheet()->mergeCells('C3:E3');
+    public function createExcelByDate($startDate, $endDate) {
 
-        $activeWorksheet->setCellValue('A1', 'Rekap All Data Invoice');
-        $activeWorksheet->setCellValue('A3', 'Tanggal');
-        $activeWorksheet->setCellValue('C3', date('Y-m-d'));
-        $activeWorksheet->setCellValue('A4', 'ID');
-        $activeWorksheet->setCellValue('B4', 'ID Penjualan');
-        $activeWorksheet->setCellValue('C4', 'Tanggal');
-        $activeWorksheet->setCellValue('D4', 'ID Pelanggan');
-        $activeWorksheet->setCellValue('E4', 'Alamat');
-        $activeWorksheet->setCellValue('F4', 'Telepon');
-        $activeWorksheet->setCellValue('G4', 'ID Produk');
-        $activeWorksheet->setCellValue('H4', 'Nama Produk');
-        $activeWorksheet->setCellValue('I4', 'Harga');
-        $activeWorksheet->setCellValue('J4', 'Quantity');
-        $activeWorksheet->setCellValue('K4', 'Subtotal');
+        // $startDate = $this->request->getGet('start_date');
+        // $endDate = $this->request->getGet('end_date');
 
-        $activeWorksheet->getStyle('A1:K4')->getFont()->setBold(true);
+        if (!$startDate || !$endDate) {
+            $response = [
+                'message' => $this->failValidationErrors('Both start_date and end_date are required.')
+            ];
 
-        foreach (range('A', 'K') as $columnID) {
-            $activeWorksheet->getColumnDimension($columnID)->setWidth(120, 'pt');
+            return $this->respond($response);
         }
 
-        $rows = 5;
-        $no = 1;
+        try {
 
-        $all_data_invoice = $this->model->get_All();
-
-        // dd($all_data_invoice);
-
-        foreach ($all_data_invoice as $user_data) {
-
-            // dd($user_data);
-            $activeWorksheet->setCellValue('A' . $rows, $user_data['id']);
-            $activeWorksheet->setCellValue('B' . $rows, $user_data['id_penjualan']);
-            $activeWorksheet->setCellValue('C' . $rows, $user_data['tanggal']);
-            $activeWorksheet->setCellValue('D' . $rows, $user_data['id_pelanggan']);
-            $activeWorksheet->setCellValue('E' . $rows, $user_data['alamat']);
-            $activeWorksheet->setCellValue('F' . $rows, $user_data['telepon']);
-            $activeWorksheet->setCellValue('G' . $rows, $user_data['id_produk']);
-            $activeWorksheet->setCellValue('H' . $rows, $user_data['nama_produk']);
-            $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($user_data['harga'], 'IDR'));
-            $activeWorksheet->setCellValue('J' . $rows, $user_data['quantity']);
-            $activeWorksheet->setCellValue('K' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
-            $activeWorksheet->getStyle('A1:K' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $rows++;
+            $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
+            $filename = 'rekap_all_data_invoice_by_date' . date('Y-m-d') . '.xlsx';
+            $spreadsheet = new Spreadsheet();
+            $activeWorksheet = $spreadsheet->getActiveSheet();
+    
+            $spreadsheet->getActiveSheet()->mergeCells('A1:D1');
+            $spreadsheet->getActiveSheet()->mergeCells('A3:B3');
+            $spreadsheet->getActiveSheet()->mergeCells('C3:E3');
+    
+            $activeWorksheet->setCellValue('A1', 'Rekap All Data Invoice By Date');
+            $activeWorksheet->setCellValue('A3', 'Tanggal Rekap');
+            $activeWorksheet->setCellValue('C3', date('Y-m-d'));
+            $activeWorksheet->setCellValue('A4', 'ID');
+            $activeWorksheet->setCellValue('B4', 'ID Penjualan');
+            $activeWorksheet->setCellValue('C4', 'Tanggal');
+            $activeWorksheet->setCellValue('D4', 'ID Pelanggan');
+            $activeWorksheet->setCellValue('E4', 'Nama Pelanggan');
+            $activeWorksheet->setCellValue('F4', 'Alamat');
+            $activeWorksheet->setCellValue('G4', 'Telepon');
+            $activeWorksheet->setCellValue('H4', 'ID Produk');
+            $activeWorksheet->setCellValue('I4', 'Nama Produk');
+            $activeWorksheet->setCellValue('J4', 'Harga');
+            $activeWorksheet->setCellValue('K4', 'Quantity');
+            $activeWorksheet->setCellValue('L4', 'Subtotal');
+    
+            $activeWorksheet->getStyle('A1:L4')->getFont()->setBold(true);
+    
+            foreach (range('A', 'L') as $columnID) {
+                $activeWorksheet->getColumnDimension($columnID)->setWidth(120, 'pt');
+            }
+    
+            $rows = 5;
+    
+            $all_data_invoice = $this->model->get_All_by_Date($startDate, $endDate);
+    
+            // dd($all_data_invoice);
+    
+            foreach ($all_data_invoice as $user_data) {
+    
+                // dd($user_data);
+                $activeWorksheet->setCellValue('A' . $rows, $user_data['id']);
+                $activeWorksheet->setCellValue('B' . $rows, $user_data['id_penjualan']);
+                $activeWorksheet->setCellValue('C' . $rows, $user_data['tanggal']);
+                $activeWorksheet->setCellValue('D' . $rows, $user_data['id_pelanggan']);
+                $activeWorksheet->setCellValue('E' . $rows, $user_data['nama_pelanggan']);
+                $activeWorksheet->setCellValue('F' . $rows, $user_data['alamat']);
+                $activeWorksheet->setCellValue('G' . $rows, $user_data['telepon']);
+                $activeWorksheet->setCellValue('H' . $rows, $user_data['id_produk']);
+                $activeWorksheet->setCellValue('I' . $rows, $user_data['nama_produk']);
+                $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($user_data['harga'], 'IDR'));
+                $activeWorksheet->setCellValue('K' . $rows, $user_data['quantity']);
+                $activeWorksheet->setCellValue('L' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
+                $activeWorksheet->getStyle('A1:L' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $rows++;
+            }
+    
+    
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header("Content-Disposition: attachment;filename=$filename");
+            header('Cache-Control: max-age=0');
+    
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        } catch(\Exception $e) {
+            return $this->failServerError($e->getMessage());
         }
-
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment;filename=$filename");
-        header('Cache-Control: max-age=0');
-
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
     }
 
     public function new()
