@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\VWInvoiceModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
+use Dompdf\Dompdf;
 use NumberFormatter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -341,7 +342,8 @@ class VWInvoiceController extends ResourceController
         }
     }
 
-    public function createExcelByDate($startDate, $endDate) {
+    public function createExcelByDate($startDate, $endDate) 
+    {
 
         // $startDate = $this->request->getGet('start_date');
         // $endDate = $this->request->getGet('end_date');
@@ -425,28 +427,40 @@ class VWInvoiceController extends ResourceController
         }
     }
 
-    public function new()
+    public function createPDF($id)
     {
-        //
+        try {
+            //
+            $dompdf = new Dompdf();
+            $options = $dompdf->getOptions();
+            $options->setDefaultFont('DejaVuSansMono-Bold');
+            $dompdf->setOptions($options);
+
+            $data = [
+                'pelanggan' => $this->model->filterById($id)
+            ];
+
+            $dompdf->loadHtml(view('view_invoice', $data));
+            $dompdf->setPaper('A4', 'landscape');
+            $dompdf->render();
+            $dompdf->stream('invoice pelanggan ' . date('Y-m-d') . '.pdf', array(
+                'Attacthment' => false
+            ));
+            
+        } catch(\Exception $e) {
+            return $this->failServerError($e->getMessage());
+        }
     }
 
-    public function create()
+    public function pdfView($id)
     {
-        //
-    }
-
-    public function edit($id = null)
-    {
-        //
-    }
-
-    public function update($id = null)
-    {
-        //
-    }
-
-    public function delete($id = null)
-    {
-        //
+        $data = [
+            'pelanggan' => $this->model->filterById($id)
+        ];
+        // foreach ($data as $key => $value) {
+        //     # code...
+        //     dd($value[0]);
+        // }
+        return view('view_invoice', $data);
     }
 }

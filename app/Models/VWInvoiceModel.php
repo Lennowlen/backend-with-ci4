@@ -68,4 +68,26 @@ class VWInvoiceModel extends Model
             ->get()
             ->getResultArray();
     }
+
+    public function filterById($id)
+    {
+        return $this->db->table('penjualan')
+        ->select("
+        pelanggan.id_pelanggan,
+        pelanggan.nama_pelanggan,
+        penjualan.tanggal,
+        produk.id_produk,
+        produk.nama_produk,
+        produk.harga,
+        detail_penjualan.quantity,
+        detail_penjualan.subtotal,
+        SUM(detail_penjualan.subtotal) AS grandtotal
+        ")
+        ->join('pelanggan', 'penjualan.id_pelanggan = pelanggan.id_pelanggan', 'inner')
+        ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
+        ->join('produk', 'detail_penjualan.id_produk = produk.id_produk')
+        ->where('pelanggan.id_pelanggan', $id)
+        ->get()
+        ->getResultArray();
+    }
 }
