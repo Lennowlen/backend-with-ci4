@@ -72,22 +72,51 @@ class VWInvoiceModel extends Model
     public function filterById($id)
     {
         return $this->db->table('penjualan')
-        ->select("
-        pelanggan.id_pelanggan,
+            ->select("
+        ROW_NUMBER() OVER (ORDER BY penjualan.id_pelanggan, detail_penjualan.id_penjualan) AS id,
         pelanggan.nama_pelanggan,
         penjualan.tanggal,
-        produk.id_produk,
         produk.nama_produk,
         produk.harga,
         detail_penjualan.quantity,
-        detail_penjualan.subtotal,
-        SUM(detail_penjualan.subtotal) AS grandtotal
+        detail_penjualan.subtotal
         ")
-        ->join('pelanggan', 'penjualan.id_pelanggan = pelanggan.id_pelanggan', 'inner')
-        ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
-        ->join('produk', 'detail_penjualan.id_produk = produk.id_produk')
-        ->where('pelanggan.id_pelanggan', $id)
-        ->get()
-        ->getResultArray();
+            ->join('pelanggan', 'penjualan.id_pelanggan = pelanggan.id_pelanggan', 'inner')
+            ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
+            ->join('produk', 'detail_penjualan.id_produk = produk.id_produk')
+            ->where('pelanggan.id_pelanggan', $id)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function grandtotals()
+    {
+        return $this->db->table('penjualan')
+            ->select("
+                pelanggan.nama_pelanggan,
+                penjualan.tanggal,
+                SUM(detail_penjualan.subtotal) AS grandtotal
+            ")
+            ->join('pelanggan', 'pelanggan.id_pelanggan = penjualan.id_pelanggan', 'inner')
+            ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
+            ->join('produk', 'detail_penjualan.id_produk = produk.id_produk', 'inner')
+            ->groupBy('pelanggan.id_pelanggan, penjualan.tanggal')
+            ->get()
+            ->getResultArray();
+    }
+
+
+    public function grandtotal($id)
+    {
+        return $this->db->table('penjualan')
+            ->select("
+        SUM(detail_penjualan.subtotal) AS total
+        ")
+            ->join('pelanggan', 'penjualan.id_pelanggan = pelanggan.id_pelanggan', 'inner')
+            ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
+            ->join('produk', 'detail_penjualan.id_produk = produk.id_produk')
+            ->where('pelanggan.id_pelanggan', $id)
+            ->get()
+            ->getResultArray();
     }
 }

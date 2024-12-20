@@ -1,67 +1,94 @@
 <style>
-    div {
+    div.container-header table tr {
+        background: none;
+    }
+
+    div.container-table {
         display: flex;
         justify-content: center;
+        margin: 0 auto;
+        border: 2px solid #333;
     }
 
-    table {
+    div.container-table table {
         font-family: Arial, Helvetica, sans-serif;
-        font-size: 18px;
+        font-size: 12px;
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
     }
 
-    td {
+    div.container-table table tr th,
+    div.container-table table tr td {
+        border: 1px solid #333;
+        padding: 5px;
         text-align: center;
-        width: 120pt;
+        word-wrap: break-word;
+    }
+
+    div.container-table table tr.total {
+        background: none;
     }
 
     tr:nth-child(even) {
         background-color: #e0e0e0;
     }
 
-    th:nth-child(even), td:nth-child(even) {
-        background-color: #e0e0e0;
+    div.container-header {
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        margin-bottom: 20px;
     }
 
     @page {
-        margin: 10px;
+        margin: 20px;
     }
 </style>
-<div>
+<div class="container-header">
+    <h2>Invoice</h2>
+    <table>
+        <tbody>
+            <tr>
+                <td>Nama Pelanggan : <?php echo $pelanggan[0]['nama_pelanggan']; ?></td>
+            </tr>
+            <tr>
+                <td>Tanggal : <?php echo $pelanggan[0]['tanggal']; ?></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="container-table">
     <table>
         <thead>
             <tr>
-                <th>ID Pelanggan</th>
-                <th>Nama Pelanggan</th>
-                <th>Tanggal</th>
-                <th>ID Produk</th>
+                <th style="text-align: start;">#</th>
                 <th>Nama Produk</th>
                 <th>Harga</th>
                 <th>QTY</th>
                 <th>Subtotal</th>
-                <th>Grandtotal</th>
             </tr>
         </thead>
         <tbody>
             <?php
-                $firstRow = true;
-                foreach ($pelanggan as $plg => $value) { ?>
+            $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
+            foreach ($pelanggan as $plg => $value) { ?>
                 <tr>
-                    <?php if ($firstRow) { ?>
-                        <td rowspan="<?php echo count($pelanggan); ?>"><?php echo $value['id_pelanggan']; ?></td>
-                        <td rowspan="<?php echo count($pelanggan); ?>"><?php echo $value['nama_pelanggan']; ?></td>
-                    <?php
-                        $firstRow = false;
-                    } ?>
-                    <td><?php echo $value['tanggal']; ?></td>
-                    <td><?php echo $value['id_produk']; ?></td>
+                    <td style="text-align: start;"><?php echo $value['id']; ?></td>
                     <td><?php echo $value['nama_produk']; ?></td>
-                    <td><?php echo $value['harga']; ?></td>
+                    <td><?php echo $formatter->formatCurrency($value['harga'], 'IDR'); ?></td>
                     <td><?php echo $value['quantity']; ?></td>
-                    <td><?php echo $value['subtotal']; ?></td>
-                    <?php
-                    $firstRow = true;
-                    if ($firstRow) { ?>
-                        <td rowspan="<?php echo count($pelanggan); ?>"><?php echo $value['grandtotal']; ?></td>
+                    <td><?php echo $formatter->formatCurrency($value['subtotal'], 'IDR'); ?></td>
+                </tr>
+            <?php } ?>
+
+            <?php
+            $firstRow = true;
+            $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
+            foreach ($grandtotal as $plg => $value) { ?>
+                <tr class="total" >
+                    <?php if ($firstRow) { ?>
+                        <td colspan="4"><b>Total : </b></td>
+                        <td colspan="1"><b><?php echo $formatter->formatCurrency($value['total'], 'IDR'); ?></b></td>
                     <?php
                         $firstRow = false;
                     } ?>
