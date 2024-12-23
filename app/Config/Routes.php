@@ -48,4 +48,6 @@ $routes->get('/api/pdf/create/(:num)', 'VWInvoiceController::createPDF/$1');
 
 $routes->get('/pdf/(:num)', 'VWInvoiceController::pdfView/$1');
 
+$routes->get('/test', 'VWInvoiceController::createExcel');
+
 // $routes->setAutoRoute(true); // for allow access all route

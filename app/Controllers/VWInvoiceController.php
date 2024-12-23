@@ -272,17 +272,149 @@ class VWInvoiceController extends ResourceController
     public function createExcel()
     {
         try {
+            $all_data_invoice = $this->model->get_All();
+            $grandtotal = $this->model->grandtotals();
 
             $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
             $filename = 'rekap_all_data_invoice_' . date('Y-m-d') . '.xlsx';
             $spreadsheet = new Spreadsheet();
             $activeWorksheet = $spreadsheet->getActiveSheet();
-    
-            $spreadsheet->getActiveSheet()->mergeCells('A1:D1');
-            $spreadsheet->getActiveSheet()->mergeCells('A3:B3');
-            $spreadsheet->getActiveSheet()->mergeCells('C3:E3');
-    
-            $activeWorksheet->setCellValue('A1', 'Rekap All Data Invoice');
+
+            // Set page orientation and size
+            $activeWorksheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+            $activeWorksheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+
+            // Initial header setup
+            $activeWorksheet->mergeCells('A1:J1');
+            $activeWorksheet->mergeCells('A3:B3');
+            $activeWorksheet->mergeCells('C3:E3');
+
+            // Title Styling
+            $activeWorksheet->getStyle('A1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 16,
+                    'color' => ['rgb' => '000000']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E8E8E8']
+                ]
+            ]);
+            $activeWorksheet->getRowDimension(1)->setRowHeight(30);
+
+            // Header Row Styling
+            $headerStyle = [
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '4472C4']
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ];
+
+            // Group data by id_pelanggan and tanggal
+            $grouped_data = [];
+            foreach ($all_data_invoice as $item) {
+                $key = $item['id_pelanggan'] . '_' . $item['tanggal'];
+                if (!isset($grouped_data[$key])) {
+                    $grouped_data[$key] = [
+                        'rows' => [],
+                        'id_pelanggan' => $item['id_pelanggan'],
+                        'tanggal' => $item['tanggal']
+                    ];
+                }
+                $grouped_data[$key]['rows'][] = $item;
+            }
+
+            $rows = 5;
+            $current_merge_start = null;
+            $previous_key = null;
+
+            // Data styling
+            $dataStyle = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ],
+                'alignment' => [
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ];
+
+            // Write data and handle merging
+            foreach ($grouped_data as $key => $group) {
+                if ($previous_key !== $key) {
+                    if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
+                        $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
+                    }
+                    $current_merge_start = $rows;
+                }
+
+                $group_total = 0;
+                foreach ($grandtotal as $gt) {
+                    if ($gt['id'] == $group['id_pelanggan'] && $gt['tanggal'] == $group['tanggal']) {
+                        $group_total = $gt['grandtotal'];
+                        break;
+                    }
+                }
+
+                foreach ($group['rows'] as $value) {
+                    $activeWorksheet->setCellValue('A' . $rows, $value['id']);
+                    $activeWorksheet->setCellValue('B' . $rows, $value['tanggal']);
+                    $activeWorksheet->setCellValue('C' . $rows, $value['nama_pelanggan']);
+                    $activeWorksheet->setCellValue('D' . $rows, $value['alamat']);
+                    $activeWorksheet->setCellValue('E' . $rows, $value['telepon']);
+                    $activeWorksheet->setCellValue('F' . $rows, $value['nama_produk']);
+                    $activeWorksheet->setCellValue('G' . $rows, $formatter->formatCurrency($value['harga'], 'IDR'));
+                    $activeWorksheet->setCellValue('H' . $rows, $value['quantity']);
+                    $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($value['subtotal'], 'IDR'));
+                    $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($group_total, 'IDR'));
+
+                    // Apply zebra striping
+                    if ($rows % 2 == 0) {
+                        $activeWorksheet->getStyle('A' . $rows . ':J' . $rows)->applyFromArray([
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => 'F5F5F5']
+                            ]
+                        ]);
+                    }
+
+                    $rows++;
+                }
+
+                $previous_key = $key;
+            }
+
+            // Handle the last merge group
+            if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
+                $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
+            }
+
+            // Apply styles to the data range
+            $activeWorksheet->getStyle('A5:J' . ($rows - 1))->applyFromArray($dataStyle);
+
+            // Set headers
+            $activeWorksheet->setCellValue('A1', 'REKAP ALL DATA INVOICE');
             $activeWorksheet->setCellValue('A3', 'Tanggal Rekap');
             $activeWorksheet->setCellValue('C3', date('Y-m-d'));
             $activeWorksheet->setCellValue('A4', '#');
@@ -295,72 +427,50 @@ class VWInvoiceController extends ResourceController
             $activeWorksheet->setCellValue('H4', 'Quantity');
             $activeWorksheet->setCellValue('I4', 'Subtotal');
             $activeWorksheet->setCellValue('J4', 'Total');
-    
-            $activeWorksheet->getStyle('A1:J4')->getFont()->setBold(true);
-    
-            foreach (range('A', 'J') as $columnID) {
-                $activeWorksheet->getColumnDimension($columnID)->setWidth(80, 'pt');
+
+            // Apply header styling
+            $activeWorksheet->getStyle('A4:J4')->applyFromArray($headerStyle);
+            $activeWorksheet->getRowDimension(4)->setRowHeight(25);
+
+            // Column widths
+            $columnWidths = [
+                'A' => 40,  // #
+                'B' => 80,  // Tanggal
+                'C' => 120, // Nama Pelanggan
+                'D' => 150, // Alamat
+                'E' => 100, // Telepon
+                'F' => 120, // Nama Produk
+                'G' => 100, // Harga/pcs
+                'H' => 60,  // Quantity
+                'I' => 100, // Subtotal
+                'J' => 100  // Total
+            ];
+
+            foreach ($columnWidths as $column => $width) {
+                $activeWorksheet->getColumnDimension($column)->setWidth($width, 'pt');
             }
-    
-            $rows = 5;
-            $rowsj = 5;
-    
-            $all_data_invoice = $this->model->get_All();
-            $grandtotal = $this->model->grandtotals();
 
-            // var_dump(json_encode($grandtotal));
+            // Align numeric columns
+            $activeWorksheet->getStyle('G5:J' . ($rows - 1))->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
-            // if (isset($grandtotal[$no])) {
-            //     dd("Missing index: $no", $grandtotal, $all_data_invoice);
-            // }
-            
-    
-            // dd($grandtotal[5]['grandtotal']);
-    
-            // foreach ($all_data_invoice as $user_data) {
-    
-            //     // dd($user_data);
-            //     $activeWorksheet->setCellValue('A' . $rows, $user_data['id']);
-            //     $activeWorksheet->setCellValue('B' . $rows, $user_data['tanggal']);
-            //     $activeWorksheet->setCellValue('C' . $rows, $user_data['nama_pelanggan']);
-            //     $activeWorksheet->setCellValue('D' . $rows, $user_data['alamat']);
-            //     $activeWorksheet->setCellValue('E' . $rows, $user_data['telepon']);
-            //     $activeWorksheet->setCellValue('F' . $rows, $user_data['nama_produk']);
-            //     $activeWorksheet->setCellValue('G' . $rows, $formatter->formatCurrency($user_data['harga'], 'IDR'));
-            //     $activeWorksheet->setCellValue('H' . $rows, $user_data['quantity']);
-            //     $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
-            //     $activeWorksheet->getStyle('A1' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-            //     $activeWorksheet->getStyle('B1:J' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            //     $rows++;
-            // }
-            
-            // foreach ($grandtotal as $gt) {
-            //     var_dump($gt['grandtotal']);
-            //     // dd($gt['grandtotal']);
-            //     // $activeWorksheet->setCellValue('J' . $rowsj, $formatter->formatCurrency($gt['grandtotal'], 'IDR'));
-            // }
+            // Set print area
+            $activeWorksheet->getPageSetup()->setPrintArea('A1:J' . ($rows - 1));
 
-            var_dump($grandtotal);
-    
-    
-            // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            // header("Content-Disposition: attachment;filename=$filename");
-            // header('Cache-Control: max-age=0');
-    
-            // $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-            // $writer = new Xlsx($spreadsheet);
-            // $writer->save('php://output');
-        } catch(\Exception $e) {
+            // Output the file
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header("Content-Disposition: attachment;filename=$filename");
+            header('Cache-Control: max-age=0');
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        } catch (\Exception $e) {
             return $this->failServerError($e->getMessage());
         }
     }
 
-    public function createExcelByDate($startDate, $endDate) 
+    public function createExcelByDate($startDate, $endDate)
     {
-
-        // $startDate = $this->request->getGet('start_date');
-        // $endDate = $this->request->getGet('end_date');
-
         if (!$startDate || !$endDate) {
             $response = [
                 'message' => $this->failValidationErrors('Both start_date and end_date are required.')
@@ -368,76 +478,201 @@ class VWInvoiceController extends ResourceController
 
             return $this->respond($response);
         }
-
+        
         try {
+            $all_data_invoice = $this->model->get_All_by_Date($startDate, $endDate);
+            $grandtotal = $this->model->grandtotals();
 
             $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
-            $filename = 'rekap_all_data_invoice_by_date' . date('Y-m-d') . '.xlsx';
+            $filename = 'rekap_all_data_invoice_by_date_' . date('Y-m-d') . '.xlsx';
             $spreadsheet = new Spreadsheet();
             $activeWorksheet = $spreadsheet->getActiveSheet();
-    
-            $spreadsheet->getActiveSheet()->mergeCells('A1:D1');
-            $spreadsheet->getActiveSheet()->mergeCells('A3:B3');
-            $spreadsheet->getActiveSheet()->mergeCells('C3:E3');
-    
-            $activeWorksheet->setCellValue('A1', 'Rekap All Data Invoice By Date');
+
+            // Set page orientation and size
+            $activeWorksheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+            $activeWorksheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+
+            // Initial header setup
+            $activeWorksheet->mergeCells('A1:J1');
+            $activeWorksheet->mergeCells('A3:B3');
+            $activeWorksheet->mergeCells('C3:E3');
+
+            // Title Styling
+            $activeWorksheet->getStyle('A1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 16,
+                    'color' => ['rgb' => '000000']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E8E8E8']
+                ]
+            ]);
+            $activeWorksheet->getRowDimension(1)->setRowHeight(30);
+
+            // Header Row Styling
+            $headerStyle = [
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '4472C4']
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ];
+
+            // Group data by id_pelanggan and tanggal
+            $grouped_data = [];
+            foreach ($all_data_invoice as $item) {
+                $key = $item['id_pelanggan'] . '_' . $item['tanggal'];
+                if (!isset($grouped_data[$key])) {
+                    $grouped_data[$key] = [
+                        'rows' => [],
+                        'id_pelanggan' => $item['id_pelanggan'],
+                        'tanggal' => $item['tanggal']
+                    ];
+                }
+                $grouped_data[$key]['rows'][] = $item;
+            }
+
+            $rows = 5;
+            $current_merge_start = null;
+            $previous_key = null;
+
+            // Data styling
+            $dataStyle = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ],
+                'alignment' => [
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ];
+
+            // Write data and handle merging
+            foreach ($grouped_data as $key => $group) {
+                if ($previous_key !== $key) {
+                    if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
+                        $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
+                    }
+                    $current_merge_start = $rows;
+                }
+
+                $group_total = 0;
+                foreach ($grandtotal as $gt) {
+                    if ($gt['id'] == $group['id_pelanggan'] && $gt['tanggal'] == $group['tanggal']) {
+                        $group_total = $gt['grandtotal'];
+                        break;
+                    }
+                }
+
+                foreach ($group['rows'] as $value) {
+                    $activeWorksheet->setCellValue('A' . $rows, $value['id']);
+                    $activeWorksheet->setCellValue('B' . $rows, $value['tanggal']);
+                    $activeWorksheet->setCellValue('C' . $rows, $value['nama_pelanggan']);
+                    $activeWorksheet->setCellValue('D' . $rows, $value['alamat']);
+                    $activeWorksheet->setCellValue('E' . $rows, $value['telepon']);
+                    $activeWorksheet->setCellValue('F' . $rows, $value['nama_produk']);
+                    $activeWorksheet->setCellValue('G' . $rows, $formatter->formatCurrency($value['harga'], 'IDR'));
+                    $activeWorksheet->setCellValue('H' . $rows, $value['quantity']);
+                    $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($value['subtotal'], 'IDR'));
+                    $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($group_total, 'IDR'));
+
+                    // Apply zebra striping
+                    if ($rows % 2 == 0) {
+                        $activeWorksheet->getStyle('A' . $rows . ':J' . $rows)->applyFromArray([
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => 'F5F5F5']
+                            ]
+                        ]);
+                    }
+
+                    $rows++;
+                }
+
+                $previous_key = $key;
+            }
+
+            // Handle the last merge group
+            if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
+                $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
+            }
+
+            // Apply styles to the data range
+            $activeWorksheet->getStyle('A5:J' . ($rows - 1))->applyFromArray($dataStyle);
+
+            // Set headers
+            $activeWorksheet->setCellValue('A1', 'REKAP ALL DATA INVOICE');
             $activeWorksheet->setCellValue('A3', 'Tanggal Rekap');
             $activeWorksheet->setCellValue('C3', date('Y-m-d'));
             $activeWorksheet->setCellValue('A4', '#');
-            $activeWorksheet->setCellValue('B4', 'ID Penjualan');
-            $activeWorksheet->setCellValue('C4', 'Tanggal');
-            $activeWorksheet->setCellValue('D4', 'ID Pelanggan');
-            $activeWorksheet->setCellValue('E4', 'Nama Pelanggan');
-            $activeWorksheet->setCellValue('F4', 'Alamat');
-            $activeWorksheet->setCellValue('G4', 'Telepon');
-            $activeWorksheet->setCellValue('H4', 'ID Produk');
-            $activeWorksheet->setCellValue('I4', 'Nama Produk');
-            $activeWorksheet->setCellValue('J4', 'Harga');
-            $activeWorksheet->setCellValue('K4', 'Quantity');
-            $activeWorksheet->setCellValue('L4', 'Subtotal');
-            $activeWorksheet->setCellValue('M4', 'Subtotal');
-    
-            $activeWorksheet->getStyle('A1:M4')->getFont()->setBold(true);
-    
-            foreach (range('A', 'M') as $columnID) {
-                $activeWorksheet->getColumnDimension($columnID)->setWidth(120, 'pt');
+            $activeWorksheet->setCellValue('B4', 'Tanggal');
+            $activeWorksheet->setCellValue('C4', 'Nama Pelanggan');
+            $activeWorksheet->setCellValue('D4', 'Alamat');
+            $activeWorksheet->setCellValue('E4', 'Telepon');
+            $activeWorksheet->setCellValue('F4', 'Nama Produk');
+            $activeWorksheet->setCellValue('G4', 'Harga/pcs');
+            $activeWorksheet->setCellValue('H4', 'Quantity');
+            $activeWorksheet->setCellValue('I4', 'Subtotal');
+            $activeWorksheet->setCellValue('J4', 'Total');
+
+            // Apply header styling
+            $activeWorksheet->getStyle('A4:J4')->applyFromArray($headerStyle);
+            $activeWorksheet->getRowDimension(4)->setRowHeight(25);
+
+            // Column widths
+            $columnWidths = [
+                'A' => 40,  // #
+                'B' => 80,  // Tanggal
+                'C' => 120, // Nama Pelanggan
+                'D' => 150, // Alamat
+                'E' => 100, // Telepon
+                'F' => 120, // Nama Produk
+                'G' => 100, // Harga/pcs
+                'H' => 60,  // Quantity
+                'I' => 100, // Subtotal
+                'J' => 100  // Total
+            ];
+
+            foreach ($columnWidths as $column => $width) {
+                $activeWorksheet->getColumnDimension($column)->setWidth($width, 'pt');
             }
-    
-            $rows = 5;
-    
-            $all_data_invoice = $this->model->get_All_by_Date($startDate, $endDate);
-    
-            // dd($all_data_invoice);
-    
-            foreach ($all_data_invoice as $user_data) {
-    
-                // dd($user_data);
-                $activeWorksheet->setCellValue('A' . $rows, $user_data['id']);
-                $activeWorksheet->setCellValue('B' . $rows, $user_data['id_penjualan']);
-                $activeWorksheet->setCellValue('C' . $rows, $user_data['tanggal']);
-                $activeWorksheet->setCellValue('D' . $rows, $user_data['id_pelanggan']);
-                $activeWorksheet->setCellValue('E' . $rows, $user_data['nama_pelanggan']);
-                $activeWorksheet->setCellValue('F' . $rows, $user_data['alamat']);
-                $activeWorksheet->setCellValue('G' . $rows, $user_data['telepon']);
-                $activeWorksheet->setCellValue('H' . $rows, $user_data['id_produk']);
-                $activeWorksheet->setCellValue('I' . $rows, $user_data['nama_produk']);
-                $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($user_data['harga'], 'IDR'));
-                $activeWorksheet->setCellValue('K' . $rows, $user_data['quantity']);
-                $activeWorksheet->setCellValue('L' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
-                $activeWorksheet->setCellValue('M' . $rows, $formatter->formatCurrency($user_data['subtotal'], 'IDR'));
-                $activeWorksheet->getStyle('A1:L' . ($rows))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $rows++;
-            }
-    
-    
+
+            // Align numeric columns
+            $activeWorksheet->getStyle('G5:J' . ($rows - 1))->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+
+            // Set print area
+            $activeWorksheet->getPageSetup()->setPrintArea('A1:J' . ($rows - 1));
+
+            // Output the file
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header("Content-Disposition: attachment;filename=$filename");
             header('Cache-Control: max-age=0');
-    
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->failServerError($e->getMessage());
         }
     }
@@ -463,8 +698,7 @@ class VWInvoiceController extends ResourceController
             $dompdf->stream('invoice pelanggan ' . date('Y-m-d') . '.pdf', array(
                 'Attacthment' => false
             ));
-            
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->failServerError($e->getMessage());
         }
     }
@@ -480,10 +714,7 @@ class VWInvoiceController extends ResourceController
             'pelanggan' => $user_data,
             'grandtotal' => $grandtotal
         ];
-        // foreach ($data as $key => $value) {
-        //     # code...
-        //     dd($value[0]);
-        // }
+
         return view('view_invoice', $data);
     }
 }

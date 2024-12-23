@@ -93,13 +93,14 @@ class VWInvoiceModel extends Model
     {
         return $this->db->table('penjualan')
             ->select("
-                pelanggan.nama_pelanggan,
+                pelanggan.id_pelanggan AS id,
+                pelanggan.nama_pelanggan AS nama,
+                penjualan.id_penjualan,
                 penjualan.tanggal,
                 SUM(detail_penjualan.subtotal) AS grandtotal
             ")
             ->join('pelanggan', 'pelanggan.id_pelanggan = penjualan.id_pelanggan', 'inner')
             ->join('detail_penjualan', 'penjualan.id_penjualan = detail_penjualan.id_penjualan', 'inner')
-            ->join('produk', 'detail_penjualan.id_produk = produk.id_produk', 'inner')
             ->groupBy('pelanggan.id_pelanggan, penjualan.tanggal')
             ->get()
             ->getResultArray();
