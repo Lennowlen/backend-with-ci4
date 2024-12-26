@@ -344,8 +344,7 @@ class VWInvoiceController extends ResourceController
             }
 
             $rows = 5;
-            $current_merge_start = null;
-            $previous_key = null;
+            $final_total = 0;
 
             // Data styling
             $dataStyle = [
@@ -360,23 +359,8 @@ class VWInvoiceController extends ResourceController
                 ]
             ];
 
-            // Write data and handle merging
+            // Write data
             foreach ($grouped_data as $key => $group) {
-                if ($previous_key !== $key) {
-                    if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
-                        $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
-                    }
-                    $current_merge_start = $rows;
-                }
-
-                $group_total = 0;
-                foreach ($grandtotal as $gt) {
-                    if ($gt['id'] == $group['id_pelanggan'] && $gt['tanggal'] == $group['tanggal']) {
-                        $group_total = $gt['grandtotal'];
-                        break;
-                    }
-                }
-
                 foreach ($group['rows'] as $value) {
                     $activeWorksheet->setCellValue('A' . $rows, $value['id']);
                     $activeWorksheet->setCellValue('B' . $rows, $value['tanggal']);
@@ -387,11 +371,13 @@ class VWInvoiceController extends ResourceController
                     $activeWorksheet->setCellValue('G' . $rows, $formatter->formatCurrency($value['harga'], 'IDR'));
                     $activeWorksheet->setCellValue('H' . $rows, $value['quantity']);
                     $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($value['subtotal'], 'IDR'));
-                    $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($group_total, 'IDR'));
+
+                    // Calculate final total
+                    $final_total += $value['subtotal'];
 
                     // Apply zebra striping
                     if ($rows % 2 == 0) {
-                        $activeWorksheet->getStyle('A' . $rows . ':J' . $rows)->applyFromArray([
+                        $activeWorksheet->getStyle('A' . $rows . ':I' . $rows)->applyFromArray([
                             'fill' => [
                                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                                 'startColor' => ['rgb' => 'F5F5F5']
@@ -401,17 +387,34 @@ class VWInvoiceController extends ResourceController
 
                     $rows++;
                 }
-
-                $previous_key = $key;
             }
 
-            // Handle the last merge group
-            if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
-                $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
-            }
+            // Add total row
+            $total_row = $rows;
+            $activeWorksheet->mergeCells('A' . $total_row . ':H' . $total_row);
+            $activeWorksheet->setCellValue('A' . $total_row, 'Total :');
+            $activeWorksheet->setCellValue('I' . $total_row, $formatter->formatCurrency($final_total, 'IDR'));
+
+            // Style the total row
+            $totalStyle = [
+                'font' => [
+                    'bold' => true
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ];
+            $activeWorksheet->getStyle('A' . $total_row . ':I' . $total_row)->applyFromArray($totalStyle);
 
             // Apply styles to the data range
-            $activeWorksheet->getStyle('A5:J' . ($rows - 1))->applyFromArray($dataStyle);
+            $activeWorksheet->getStyle('A5:I' . ($rows - 1))->applyFromArray($dataStyle);
 
             // Set headers
             $activeWorksheet->setCellValue('A1', 'REKAP ALL DATA INVOICE');
@@ -426,10 +429,9 @@ class VWInvoiceController extends ResourceController
             $activeWorksheet->setCellValue('G4', 'Harga/pcs');
             $activeWorksheet->setCellValue('H4', 'Quantity');
             $activeWorksheet->setCellValue('I4', 'Subtotal');
-            $activeWorksheet->setCellValue('J4', 'Total');
 
             // Apply header styling
-            $activeWorksheet->getStyle('A4:J4')->applyFromArray($headerStyle);
+            $activeWorksheet->getStyle('A4:I4')->applyFromArray($headerStyle);
             $activeWorksheet->getRowDimension(4)->setRowHeight(25);
 
             // Column widths
@@ -442,8 +444,7 @@ class VWInvoiceController extends ResourceController
                 'F' => 120, // Nama Produk
                 'G' => 100, // Harga/pcs
                 'H' => 60,  // Quantity
-                'I' => 100, // Subtotal
-                'J' => 100  // Total
+                'I' => 100  // Subtotal
             ];
 
             foreach ($columnWidths as $column => $width) {
@@ -451,11 +452,11 @@ class VWInvoiceController extends ResourceController
             }
 
             // Align numeric columns
-            $activeWorksheet->getStyle('G5:J' . ($rows - 1))->getAlignment()
+            $activeWorksheet->getStyle('G5:I' . ($rows))->getAlignment()
                 ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Set print area
-            $activeWorksheet->getPageSetup()->setPrintArea('A1:J' . ($rows - 1));
+            $activeWorksheet->getPageSetup()->setPrintArea('A1:I' . $total_row);
 
             // Output the file
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -478,7 +479,7 @@ class VWInvoiceController extends ResourceController
 
             return $this->respond($response);
         }
-        
+
         try {
             $all_data_invoice = $this->model->get_All_by_Date($startDate, $endDate);
             $grandtotal = $this->model->grandtotals();
@@ -552,8 +553,7 @@ class VWInvoiceController extends ResourceController
             }
 
             $rows = 5;
-            $current_merge_start = null;
-            $previous_key = null;
+            $final_total = 0;
 
             // Data styling
             $dataStyle = [
@@ -568,23 +568,8 @@ class VWInvoiceController extends ResourceController
                 ]
             ];
 
-            // Write data and handle merging
+            // Write data
             foreach ($grouped_data as $key => $group) {
-                if ($previous_key !== $key) {
-                    if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
-                        $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
-                    }
-                    $current_merge_start = $rows;
-                }
-
-                $group_total = 0;
-                foreach ($grandtotal as $gt) {
-                    if ($gt['id'] == $group['id_pelanggan'] && $gt['tanggal'] == $group['tanggal']) {
-                        $group_total = $gt['grandtotal'];
-                        break;
-                    }
-                }
-
                 foreach ($group['rows'] as $value) {
                     $activeWorksheet->setCellValue('A' . $rows, $value['id']);
                     $activeWorksheet->setCellValue('B' . $rows, $value['tanggal']);
@@ -595,11 +580,13 @@ class VWInvoiceController extends ResourceController
                     $activeWorksheet->setCellValue('G' . $rows, $formatter->formatCurrency($value['harga'], 'IDR'));
                     $activeWorksheet->setCellValue('H' . $rows, $value['quantity']);
                     $activeWorksheet->setCellValue('I' . $rows, $formatter->formatCurrency($value['subtotal'], 'IDR'));
-                    $activeWorksheet->setCellValue('J' . $rows, $formatter->formatCurrency($group_total, 'IDR'));
+
+                    // Calculate final total
+                    $final_total += $value['subtotal'];
 
                     // Apply zebra striping
                     if ($rows % 2 == 0) {
-                        $activeWorksheet->getStyle('A' . $rows . ':J' . $rows)->applyFromArray([
+                        $activeWorksheet->getStyle('A' . $rows . ':I' . $rows)->applyFromArray([
                             'fill' => [
                                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                                 'startColor' => ['rgb' => 'F5F5F5']
@@ -609,17 +596,34 @@ class VWInvoiceController extends ResourceController
 
                     $rows++;
                 }
-
-                $previous_key = $key;
             }
 
-            // Handle the last merge group
-            if ($current_merge_start !== null && $rows - $current_merge_start > 1) {
-                $activeWorksheet->mergeCells("J{$current_merge_start}:J" . ($rows - 1));
-            }
+            // Add total row
+            $total_row = $rows;
+            $activeWorksheet->mergeCells('A' . $total_row . ':H' . $total_row);
+            $activeWorksheet->setCellValue('A' . $total_row, 'Total :');
+            $activeWorksheet->setCellValue('I' . $total_row, $formatter->formatCurrency($final_total, 'IDR'));
+
+            // Style the total row
+            $totalStyle = [
+                'font' => [
+                    'bold' => true
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ]
+            ];
+            $activeWorksheet->getStyle('A' . $total_row . ':I' . $total_row)->applyFromArray($totalStyle);
 
             // Apply styles to the data range
-            $activeWorksheet->getStyle('A5:J' . ($rows - 1))->applyFromArray($dataStyle);
+            $activeWorksheet->getStyle('A5:I' . ($rows - 1))->applyFromArray($dataStyle);
 
             // Set headers
             $activeWorksheet->setCellValue('A1', 'REKAP ALL DATA INVOICE');
@@ -634,10 +638,9 @@ class VWInvoiceController extends ResourceController
             $activeWorksheet->setCellValue('G4', 'Harga/pcs');
             $activeWorksheet->setCellValue('H4', 'Quantity');
             $activeWorksheet->setCellValue('I4', 'Subtotal');
-            $activeWorksheet->setCellValue('J4', 'Total');
 
             // Apply header styling
-            $activeWorksheet->getStyle('A4:J4')->applyFromArray($headerStyle);
+            $activeWorksheet->getStyle('A4:I4')->applyFromArray($headerStyle);
             $activeWorksheet->getRowDimension(4)->setRowHeight(25);
 
             // Column widths
@@ -650,8 +653,7 @@ class VWInvoiceController extends ResourceController
                 'F' => 120, // Nama Produk
                 'G' => 100, // Harga/pcs
                 'H' => 60,  // Quantity
-                'I' => 100, // Subtotal
-                'J' => 100  // Total
+                'I' => 100  // Subtotal
             ];
 
             foreach ($columnWidths as $column => $width) {
@@ -659,11 +661,11 @@ class VWInvoiceController extends ResourceController
             }
 
             // Align numeric columns
-            $activeWorksheet->getStyle('G5:J' . ($rows - 1))->getAlignment()
+            $activeWorksheet->getStyle('G5:I' . ($rows))->getAlignment()
                 ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Set print area
-            $activeWorksheet->getPageSetup()->setPrintArea('A1:J' . ($rows - 1));
+            $activeWorksheet->getPageSetup()->setPrintArea('A1:I' . $total_row);
 
             // Output the file
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
