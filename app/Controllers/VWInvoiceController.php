@@ -244,24 +244,13 @@ class VWInvoiceController extends ResourceController
     }
 
     /**
-     * @OA\Get(
+     * @OA\GET(
      *     path="/api/invoice/excel/create",
-     *     summary="Generate Excel file containing invoice data",
-     *     description="This endpoint generates and downloads an Excel file that includes a summary of all invoice data.",
+     *     summary="Membuat Excel Invoice Pelanggan dengan semua data",
      *     tags={"Invoice Pelanggan"},
      *     @OA\Response(
      *         response=200,
-     *         description="Excel file successfully generated and downloaded.",
-     *         @OA\Header(
-     *             header="Content-Type",
-     *             description="The MIME type of the returned file (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)",
-     *             @OA\Schema(type="string", example="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-     *         ),
-     *         @OA\Header(
-     *             header="Content-Disposition",
-     *             description="Attachment header with the filename",
-     *             @OA\Schema(type="string", example="attachment; filename=rekap_all_data_invoice_2024-06-14.xlsx")
-     *         )
+     *         description="Invoice pelanggan dengan ID tertentu berhasil dibuat"
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -274,6 +263,11 @@ class VWInvoiceController extends ResourceController
         try {
             $all_data_invoice = $this->model->get_All();
             $grandtotal = $this->model->grandtotals();
+
+            // Sort data by date
+            usort($all_data_invoice, function ($a, $b) {
+                return strtotime($a['tanggal']) - strtotime($b['tanggal']);
+            });
 
             $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
             $filename = 'rekap_all_data_invoice_' . date('Y-m-d') . '.xlsx';
@@ -465,11 +459,41 @@ class VWInvoiceController extends ResourceController
 
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
+            exit;
         } catch (\Exception $e) {
             return $this->failServerError($e->getMessage());
         }
     }
 
+    /**
+     * @OA\GET(
+     *     path="/api/invoice/excel/bydate/create/{startDate}/{endDate}",
+     *     summary="Membuat Excel Invoice Pelanggan berdasarkan rentang tanggal",
+     *     tags={"Invoice Pelanggan"},
+     *      @OA\Parameter(
+     *         name="startDate",
+     *         in="path",
+     *         description="ID Pelanggan",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *      @OA\Parameter(
+     *         name="endDate",
+     *         in="path",
+     *         description="ID Pelanggan",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Invoice pelanggan dengan ID tertentu berhasil dibuat"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error occurred while generating the Excel file."
+     *     )
+     * )
+     */
     public function createExcelByDate($startDate, $endDate)
     {
         if (!$startDate || !$endDate) {
@@ -483,6 +507,11 @@ class VWInvoiceController extends ResourceController
         try {
             $all_data_invoice = $this->model->get_All_by_Date($startDate, $endDate);
             $grandtotal = $this->model->grandtotals();
+
+            // Sort data by date
+            usort($all_data_invoice, function ($a, $b) {
+                return strtotime($a['tanggal']) - strtotime($b['tanggal']);
+            });
 
             $formatter = new NumberFormatter('id_ID', NumberFormatter::CURRENCY);
             $filename = 'rekap_all_data_invoice_by_date_' . date('Y-m-d') . '.xlsx';
@@ -674,11 +703,34 @@ class VWInvoiceController extends ResourceController
 
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
+            exit;
         } catch (\Exception $e) {
             return $this->failServerError($e->getMessage());
         }
     }
 
+    /**
+     * @OA\GET(
+     *     path="/api/pdf/create/{id}",
+     *     summary="Membuat Invoice Pelanggan",
+     *     tags={"Invoice Pelanggan"},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID Pelanggan",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Invoice pelanggan dengan ID tertentu berhasil dibuat"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error occurred while generating the Excel file."
+     *     )
+     * )
+     */
     public function createPDF($id)
     {
         try {
